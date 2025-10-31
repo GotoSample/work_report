@@ -1,0 +1,55 @@
+services:
+  web:
+    build: .
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: app.py
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: rootpassword
+      MYSQL_DATABASE: flask_db
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src:/usr/src/app
+      - ./tests:/usr/src/app/tests
+    depends_on:
+      - db
+      - selenium
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: flask_db
+      MYSQL_USER: flask_user
+      MYSQL_PASSWORD: flask_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    environment:
+      - VNC_NO_PASSWORD=1
+    volumes:
+      - /dev/shm:/dev/shm
+
+volumes:
+  mysql_data:
