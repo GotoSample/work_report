@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}ログイン - 勤怠管理システム{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 100px auto;">
+    <h2 style="margin-bottom: 20px; text-align: center;">ログイン</h2>
+    <form method="POST" action="{{ url_for('login') }}">
+        <div class="form-group">
+            <label for="email">メールアドレス</label>
+            <input type="email" id="email" name="email" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="password">パスワード</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn" style="width: 100%;">ログイン</button>
+        </div>
+    </form>
+    <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
+        <p style="font-size: 12px; margin-bottom: 10px;"><strong>テストアカウント:</strong></p>
+        <p style="font-size: 12px; margin-bottom: 5px;">課長: manager@example.com / password123</p>
+        <p style="font-size: 12px;">社員: employee@example.com / password123</p>
+    </div>
+</div>
+{% endblock %}
+

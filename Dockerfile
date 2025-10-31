@@ -1,4 +1,4 @@
 FROM python:3.10
 WORKDIR /usr/src/app
-RUN pip install flask==2.1.0 pymysql werkzeug==2.0.3 selenium>=4.0.0 pytest>=7.0.0 pytest-timeout>=2.0.0
+RUN pip install flask==2.1.0 pymysql cryptography werkzeug==2.0.3 selenium>=4.0.0 pytest>=7.0.0 pytest-timeout>=2.0.0
 CMD ["flask", "run", "--host=0.0.0.0"]

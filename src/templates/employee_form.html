@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{% if employee %}社員編集{% else %}社員作成{% endif %} - 勤怠管理システム{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{% if employee %}社員編集{% else %}社員作成{% endif %}</h2>
+    <form method="POST" action="{% if employee %}{{ url_for('employee_edit', employee_id=employee.id) }}{% else %}{{ url_for('employee_create') }}{% endif %}">
+        <div class="form-group">
+            <label for="name">名前 *</label>
+            <input type="text" id="name" name="name" value="{% if employee %}{{ employee.name }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">メールアドレス *</label>
+            <input type="email" id="email" name="email" value="{% if employee %}{{ employee.email }}{% endif %}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">パスワード {% if employee %}(変更する場合のみ){% else %}*{% endif %}</label>
+            <input type="password" id="password" name="password" {% if not employee %}required{% endif %}>
+        </div>
+        
+        <div class="form-group">
+            <label for="role">権限 *</label>
+            <select id="role" name="role" required>
+                <option value="employee" {% if employee and employee.role == 'employee' %}selected{% endif %}>社員</option>
+                <option value="manager" {% if employee and employee.role == 'manager' %}selected{% endif %}>課長</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn btn-success">保存</button>
+            <a href="{{ url_for('employees_list') }}" class="btn" style="margin-left: 10px;">キャンセル</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}社員管理 - 勤怠管理システム{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>社員一覧</h2>
+        <a href="{{ url_for('employee_create') }}" class="btn btn-success">新規社員作成</a>
+    </div>
+    
+    {% if employees %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名前</th>
+                <th>メールアドレス</th>
+                <th>権限</th>
+                <th>作成日</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employees %}
+            <tr>
+                <td>{{ employee.id }}</td>
+                <td>{{ employee.name }}</td>
+                <td>{{ employee.email }}</td>
+                <td>
+                    {% if employee.role == 'manager' %}
+                    <span style="background-color: #3498db; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">課長</span>
+                    {% else %}
+                    <span style="background-color: #95a5a6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">社員</span>
+                    {% endif %}
+                </td>
+                <td>{{ employee.created_at.strftime('%Y-%m-%d') if employee.created_at else '-' }}</td>
+                <td>
+                    <a href="{{ url_for('employee_edit', employee_id=employee.id) }}" class="btn" style="padding: 5px 10px; font-size: 12px;">編集</a>
+                    <form method="POST" action="{{ url_for('employee_delete', employee_id=employee.id) }}" style="display: inline;" onsubmit="return confirm('本当に削除しますか？');">
+                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">削除</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="padding: 20px; color: #666;">社員が登録されていません。</p>
+    {% endif %}
+</div>
+{% endblock %}
+

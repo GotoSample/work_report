@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}勤怠記録詳細 - 勤怠管理システム{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>勤怠記録詳細</h2>
+    <div style="margin: 20px 0;">
+        <p><strong>日付:</strong> {{ record.date }}</p>
+        <p><strong>社員名:</strong> {{ record.employee_name }}</p>
+        <p><strong>出勤区分:</strong> {{ record.attendance_type }}</p>
+        <p><strong>出勤時間:</strong> {{ record.start_time if record.start_time else '-' }}</p>
+        <p><strong>退勤時間:</strong> {{ record.end_time if record.end_time else '-' }}</p>
+        <p><strong>休憩時間:</strong> {{ record.break_time if record.break_time else '-' }}</p>
+        {% if record.notes %}
+        <p><strong>特記事項:</strong> {{ record.notes }}</p>
+        {% endif %}
+    </div>
+    
+    {% if project_hours %}
+    <div style="margin-top: 30px;">
+        <h3>プロジェクト毎の作業時間</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>プロジェクト名</th>
+                    <th>作業時間（時間）</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ph in project_hours %}
+                <tr>
+                    <td>{{ ph.project_name }}</td>
+                    <td>{{ ph.hours }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 30px;">
+        <a href="{{ url_for('dashboard') }}" class="btn">戻る</a>
+    </div>
+</div>
+{% endblock %}
+

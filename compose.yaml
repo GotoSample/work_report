@@ -4,6 +4,7 @@ services:
     environment:
       FLASK_ENV: development
       FLASK_APP: app.py
+      PYTHONDONTWRITEBYTECODE: 1
       MYSQL_HOST: db
       MYSQL_USER: root
       MYSQL_PASSWORD: rootpassword

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}勤怠入力 - 勤怠管理システム{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>勤怠入力</h2>
+    <form method="POST" action="{{ url_for('attendance_input') }}">
+        <div class="form-group">
+            <label for="date">日付 *</label>
+            <input type="date" id="date" name="date" value="{{ today if not record else record.date }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="attendance_type">出勤区分 *</label>
+            <select id="attendance_type" name="attendance_type" required>
+                <option value="出勤" {% if record and record.attendance_type == '出勤' %}selected{% endif %}>出勤</option>
+                <option value="遅刻" {% if record and record.attendance_type == '遅刻' %}selected{% endif %}>遅刻</option>
+                <option value="早退" {% if record and record.attendance_type == '早退' %}selected{% endif %}>早退</option>
+                <option value="午前休" {% if record and record.attendance_type == '午前休' %}selected{% endif %}>午前休</option>
+                <option value="午後休" {% if record and record.attendance_type == '午後休' %}selected{% endif %}>午後休</option>
+                <option value="一日休" {% if record and record.attendance_type == '一日休' %}selected{% endif %}>一日休</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="start_time">出勤時間（15分単位）</label>
+            <input type="time" id="start_time" name="start_time" 
+                   value="{% if record and record.start_time %}{{ record.start_time }}{% endif %}"
+                   step="900">
+        </div>
+        
+        <div class="form-group">
+            <label for="end_time">退勤時間（15分単位）</label>
+            <input type="time" id="end_time" name="end_time"
+                   value="{% if record and record.end_time %}{{ record.end_time }}{% endif %}"
+                   step="900">
+        </div>
+        
+        <div class="form-group">
+            <label for="break_time">休憩時間（15分単位）</label>
+            <input type="time" id="break_time" name="break_time" 
+                   value="{% if record and record.break_time %}{{ record.break_time }}{% else %}01:00{% endif %}"
+                   step="900">
+        </div>
+        
+        <div class="form-group">
+            <label>プロジェクト毎の作業時間（時間）</label>
+            {% for project in projects %}
+            <div style="margin-bottom: 10px;">
+                <label for="project_hours_{{ project.id }}" style="font-weight: normal;">
+                    {{ project.name }}:
+                </label>
+                <input type="number" 
+                       id="project_hours_{{ project.id }}" 
+                       name="project_hours_{{ project.id }}" 
+                       min="0" 
+                       step="0.25" 
+                       style="width: 100px; margin-left: 10px;"
+                       value="{% if project.hours %}{{ project.hours }}{% endif %}">
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="form-group">
+            <label for="notes">特記事項</label>
+            <textarea id="notes" name="notes" rows="4">{% if record %}{{ record.notes or '' }}{% endif %}</textarea>
+        </div>
+        
+        <div class="form-group">
+            <button type="submit" class="btn btn-success">保存</button>
+            <a href="{{ url_for('dashboard') }}" class="btn" style="margin-left: 10px;">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+<script>
+// 時間入力を15分単位に制限
+document.getElementById('start_time').addEventListener('change', function() {
+    limitToQuarterHours(this);
+});
+document.getElementById('end_time').addEventListener('change', function() {
+    limitToQuarterHours(this);
+});
+document.getElementById('break_time').addEventListener('change', function() {
+    limitToQuarterHours(this);
+});
+
+function limitToQuarterHours(input) {
+    const time = input.value;
+    if (time) {
+        const [hours, minutes] = time.split(':');
+        const roundedMinutes = Math.round(parseInt(minutes) / 15) * 15;
+        const adjustedHours = Math.floor(roundedMinutes / 60);
+        const finalMinutes = roundedMinutes % 60;
+        const finalHours = parseInt(hours) + adjustedHours;
+        input.value = String(finalHours).padStart(2, '0') + ':' + String(finalMinutes).padStart(2, '0');
+    }
+}
+</script>
+{% endblock %}
+

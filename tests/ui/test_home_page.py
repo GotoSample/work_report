@@ -5,6 +5,8 @@ Flaskアプリケーションのホームページ（/）のUIテストを実装
 """
 
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from tests.ui.base_test import BaseSeleniumTest
 
 
@@ -17,15 +19,20 @@ class TestHomePage(BaseSeleniumTest):
     
     def test_home_page_title(self):
         """
-        ホームページのタイトルが正しく表示されることを確認するテスト
+        ホームページがログインページにリダイレクトされることを確認するテスト
         
-        ページにアクセスした際に、正しい内容が表示されることを検証します。
+        ページにアクセスした際に、ログインページにリダイレクトされることを検証します。
         """
         self.driver.get(f"{self.base_url}/")
         
-        # ページのbodyに"Hello Flask!"が含まれていることを確認
+        # ログインページにリダイレクトされることを確認
+        WebDriverWait(self.driver, 10).until(
+            EC.url_contains("/login")
+        )
+        
+        # ページのbodyに"ログイン"が含まれていることを確認
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
-        assert "Hello Flask!" in body_text, f"期待されるテキスト 'Hello Flask!' が見つかりませんでした。実際のテキスト: {body_text}"
+        assert "ログイン" in body_text, f"期待されるテキスト 'ログイン' が見つかりませんでした。実際のテキスト: {body_text}"
     
     def test_home_page_status_code(self):
         """
