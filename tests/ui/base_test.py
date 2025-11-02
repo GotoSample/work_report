@@ -73,10 +73,10 @@ class BaseSeleniumTest:
         スクリーンショットを保存するメソッド
         
         Args:
-            filename: 保存するファイル名（screenshots/ディレクトリに保存されます）
+            filename: 保存するファイル名（SCREENSHOTS_DIR環境変数で指定されたディレクトリ、未指定ならscreenshots/ディレクトリに保存されます）
         """
-        # screenshotsディレクトリを作成
-        screenshots_dir = "screenshots"
+        # スクリーンショット保存ディレクトリを環境変数で指定可能に
+        screenshots_dir = os.getenv("SCREENSHOTS_DIR", "screenshots")
         if not os.path.exists(screenshots_dir):
             os.makedirs(screenshots_dir)
         
