@@ -318,7 +318,7 @@ docker compose exec db mysql -u root -prootpassword flask_db
 #### GET /employees/edit/<employee_id>
 社員編集フォームを表示します（ログイン必須・課長権限必須）。
 
-**パスメータ:**
+**パスパラメータ:**
 - `employee_id`: 社員ID
 
 #### POST /employees/edit/<employee_id>
