@@ -44,6 +44,9 @@ class TestLoginPage(BaseSeleniumTest):
         テストアカウントでログインできることを検証します。
         """
         self.driver.get(f"{self.base_url}/login")
+
+        # ログイン画面のスクリーンショットを撮影
+        self.save_screenshot("login_page.png")
         
         # ログイン情報を入力
         email_input = self.wait_for_element((By.NAME, "email"))
@@ -51,6 +54,9 @@ class TestLoginPage(BaseSeleniumTest):
         
         email_input.send_keys("manager@example.com")
         password_input.send_keys("password123")
+
+        # ログイン情報を入力後のスクリーンショットを撮影
+        self.save_screenshot("login_page_after_input.png")
         
         # ログインボタンをクリック
         login_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
@@ -60,6 +66,9 @@ class TestLoginPage(BaseSeleniumTest):
         WebDriverWait(self.driver, 10).until(
             EC.url_contains("/dashboard")
         )
+        
+        # ログイン成功後のダッシュボードのスクリーンショットを撮影
+        self.save_screenshot("login_success_dashboard.png")
         
         # ページの内容を確認
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
@@ -86,6 +95,10 @@ class TestLoginPage(BaseSeleniumTest):
         
         # エラーメッセージが表示されることを確認
         time.sleep(1)  # フラッシュメッセージの表示を待つ
+        
+        # ログイン失敗時のエラーメッセージのスクリーンショットを撮影
+        self.save_screenshot("login_failure_error.png")
+        
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
         assert "正しくありません" in body_text or "エラー" in body_text
 

@@ -30,6 +30,9 @@ class TestHomePage(BaseSeleniumTest):
             EC.url_contains("/login")
         )
         
+        # リダイレクト後のログインページのスクリーンショットを撮影
+        self.save_screenshot("home_page_redirect_to_login.png")
+        
         # ページのbodyに"ログイン"が含まれていることを確認
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
         assert "ログイン" in body_text, f"期待されるテキスト 'ログイン' が見つかりませんでした。実際のテキスト: {body_text}"
@@ -41,6 +44,9 @@ class TestHomePage(BaseSeleniumTest):
         HTTPステータスコードが200であることを確認します。
         """
         self.driver.get(f"{self.base_url}/")
+        
+        # ホームページのスクリーンショットを撮影
+        self.save_screenshot("home_page.png")
         
         # ページが正常に読み込まれたことを確認（Seleniumでは直接ステータスコードを取得できないため、
         # ページの存在を確認する）

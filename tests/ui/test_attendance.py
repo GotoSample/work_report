@@ -51,6 +51,9 @@ class TestAttendancePage(BaseSeleniumTest):
         """
         self.driver.get(f"{self.base_url}/attendance/input")
         
+        # 勤怠入力ページのスクリーンショットを撮影
+        self.save_screenshot("attendance_input_page.png")
+        
         # ページの内容を確認
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
         assert "勤怠入力" in body_text
@@ -96,6 +99,9 @@ class TestAttendancePage(BaseSeleniumTest):
         break_time.clear()
         break_time.send_keys("01:00")
         
+        # 入力完了後のスクリーンショットを撮影
+        self.save_screenshot("attendance_input_after_fill.png")
+        
         # 保存ボタンをクリック
         save_button = self.driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         save_button.click()
@@ -111,6 +117,10 @@ class TestAttendancePage(BaseSeleniumTest):
         
         # 成功メッセージが表示されることを確認
         time.sleep(2)  # フラッシュメッセージの表示を待つ
+        
+        # 保存後のスクリーンショットを撮影
+        self.save_screenshot("attendance_input_after_save.png")
+        
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
         assert "保存しました" in body_text or "更新しました" in body_text or "ダッシュボード" in body_text
 

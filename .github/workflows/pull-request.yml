@@ -131,6 +131,28 @@ jobs:
         run: |
           docker compose exec -T web python -m pytest tests/ui/ -v --tb=short > ui_test_results.txt 2>&1 || true
 
+      - name: スクリーンショットを取得
+        if: always()
+        continue-on-error: true
+        run: |
+          # スクリーンショットディレクトリを作成
+          mkdir -p screenshots
+          # コンテナ内のスクリーンショットをホストにコピー
+          docker compose cp web:/usr/src/app/screenshots/. screenshots/ 2>/dev/null || true
+          # src/screenshots/にも保存されている場合に備えてコピー
+          if [ -d "src/screenshots" ]; then
+            cp -r src/screenshots/* screenshots/ 2>/dev/null || true
+          fi
+
+      - name: スクリーンショットをアーティファクトとして保存
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: テスト結果を集計
         run: |
           echo "## テスト結果" > test_results.md
