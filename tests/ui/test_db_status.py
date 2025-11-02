@@ -23,6 +23,9 @@ class TestDbStatusPage(BaseSeleniumTest):
         """
         self.driver.get(f"{self.base_url}/db/status")
         
+        # DBステータスページのスクリーンショットを撮影
+        self.save_screenshot("db_status_page.png")
+        
         # ページのbodyを取得
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
         
@@ -37,6 +40,9 @@ class TestDbStatusPage(BaseSeleniumTest):
         データベースのバージョン情報が表示されることを検証します。
         """
         self.driver.get(f"{self.base_url}/db/status")
+        
+        # DBステータスページ（バージョン情報確認）のスクリーンショットを撮影
+        self.save_screenshot("db_status_page_version.png")
         
         body_text = self.driver.find_element(By.TAG_NAME, "body").text
         

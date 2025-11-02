@@ -67,4 +67,22 @@ class BaseSeleniumTest:
         """
         wait = WebDriverWait(self.driver, timeout)
         return wait.until(EC.presence_of_element_located(locator))
+    
+    def save_screenshot(self, filename):
+        """
+        スクリーンショットを保存するメソッド
+        
+        Args:
+            filename: 保存するファイル名（SCREENSHOTS_DIR環境変数で指定されたディレクトリ、未指定ならscreenshots/ディレクトリに保存されます）
+        """
+        # スクリーンショット保存ディレクトリを環境変数で指定可能に
+        screenshots_dir = os.getenv("SCREENSHOTS_DIR", "screenshots")
+        if not os.path.exists(screenshots_dir):
+            os.makedirs(screenshots_dir)
+        
+        # ファイルパスを構築
+        filepath = os.path.join(screenshots_dir, filename)
+        
+        # スクリーンショットを保存
+        self.driver.save_screenshot(filepath)
 
