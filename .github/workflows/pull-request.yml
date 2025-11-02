@@ -1,0 +1,222 @@
+# .github/pull-request.yml
+# プルリクエストのレビューを行う
+# プルリクを出したときに、自動でテストを実行してください
+## テストの結果はコメントで通知してください
+# レビュー内容は日本語で記述する
+# レビュー内容は以下の項目を確認してください
+# - コードの修正が必要な場合は、コメントを追加してください
+# - コードの修正が不要な場合は、コメントを追加しない
+
+name: Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Python環境をセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 依存関係をインストール
+        run: |
+          pip install flake8
+
+      - name: コードレビュー（flake8）
+        id: lint
+        continue-on-error: true
+        run: |
+          echo "## コードレビュー結果" > lint_results.md
+          echo "" >> lint_results.md
+          echo "### flake8チェック結果" >> lint_results.md
+          echo "" >> lint_results.md
+          
+          # ディレクトリの存在確認
+          if [ ! -d "src" ] && [ ! -d "tests" ]; then
+            echo "⚠️ src/ または tests/ ディレクトリが見つかりません。" >> lint_results.md
+          else
+            echo '```' >> lint_results.md
+            LINT_OUTPUT=""
+            if [ -d "src" ] && [ -d "tests" ]; then
+              LINT_OUTPUT=$(flake8 src/ tests/ --exclude=__pycache__ --max-line-length=120 --format=default 2>&1) || true
+            elif [ -d "src" ]; then
+              LINT_OUTPUT=$(flake8 src/ --exclude=__pycache__ --max-line-length=120 --format=default 2>&1) || true
+            elif [ -d "tests" ]; then
+              LINT_OUTPUT=$(flake8 tests/ --exclude=__pycache__ --max-line-length=120 --format=default 2>&1) || true
+            fi
+            
+            if [ -n "$LINT_OUTPUT" ]; then
+              echo "$LINT_OUTPUT" >> lint_results.md
+            else
+              echo "✅ flake8チェックで問題は見つかりませんでした。" >> lint_results.md
+            fi
+            echo '```' >> lint_results.md
+          fi
+
+      - name: レビュー結果をコメント
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            let lintContent = '## コードレビュー結果\n\n✅ コードの修正は不要です。';
+            
+            if (fs.existsSync('lint_results.md')) {
+              lintContent = fs.readFileSync('lint_results.md', 'utf8');
+            }
+            
+            const body = `## 🔍 コードレビュー\n\n${lintContent}\n\n---\n*このレビューは自動生成されました*`;
+            
+            // プルリクエストの番号を取得
+            const prNumber = context.payload.pull_request?.number || context.payload.number || context.issue.number;
+            
+            await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  test:
+    needs: review
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: テスト環境を構築
+        run: |
+          docker compose up -d db selenium
+          sleep 10
+
+      - name: Webアプリケーションをビルド
+        run: |
+          docker compose build web
+
+      - name: Webアプリケーションを起動
+        run: |
+          docker compose up -d web
+          sleep 15
+
+      - name: 単体テストを実行
+        id: unit_test
+        continue-on-error: true
+        run: |
+          docker compose exec -T web python -m pytest tests/unit/ -v --tb=short > unit_test_results.txt 2>&1 || true
+
+      - name: 結合テストを実行
+        id: integration_test
+        continue-on-error: true
+        run: |
+          docker compose exec -T web python -m pytest tests/integration/ -v --tb=short > integration_test_results.txt 2>&1 || true
+
+      - name: UIテストを実行
+        id: ui_test
+        continue-on-error: true
+        run: |
+          docker compose exec -T web python -m pytest tests/ui/ -v --tb=short > ui_test_results.txt 2>&1 || true
+
+      - name: テスト結果を集計
+        run: |
+          echo "## テスト結果" > test_results.md
+          echo "" >> test_results.md
+          
+          # 単体テスト結果
+          echo "### 単体テスト" >> test_results.md
+          echo "" >> test_results.md
+          if [ -f unit_test_results.txt ]; then
+            echo '```' >> test_results.md
+            tail -50 unit_test_results.txt >> test_results.md
+            echo '```' >> test_results.md
+          else
+            echo "テストが実行されませんでした。" >> test_results.md
+          fi
+          echo "" >> test_results.md
+          
+          # 結合テスト結果
+          echo "### 結合テスト" >> test_results.md
+          echo "" >> test_results.md
+          if [ -f integration_test_results.txt ]; then
+            echo '```' >> test_results.md
+            tail -50 integration_test_results.txt >> test_results.md
+            echo '```' >> test_results.md
+          else
+            echo "テストが実行されませんでした。" >> test_results.md
+          fi
+          echo "" >> test_results.md
+          
+          # UIテスト結果
+          echo "### UIテスト" >> test_results.md
+          echo "" >> test_results.md
+          if [ -f ui_test_results.txt ]; then
+            echo '```' >> test_results.md
+            tail -50 ui_test_results.txt >> test_results.md
+            echo '```' >> test_results.md
+          else
+            echo "テストが実行されませんでした。" >> test_results.md
+          fi
+          echo "" >> test_results.md
+          
+          # テスト結果のサマリー
+          unit_failed=$(grep -c "FAILED" unit_test_results.txt 2>/dev/null || echo "0")
+          integration_failed=$(grep -c "FAILED" integration_test_results.txt 2>/dev/null || echo "0")
+          ui_failed=$(grep -c "FAILED" ui_test_results.txt 2>/dev/null || echo "0")
+          
+          echo "## テストサマリー" >> test_results.md
+          echo "" >> test_results.md
+          echo "- 単体テスト失敗数: $unit_failed" >> test_results.md
+          echo "- 結合テスト失敗数: $integration_failed" >> test_results.md
+          echo "- UIテスト失敗数: $ui_failed" >> test_results.md
+          echo "" >> test_results.md
+          
+          total_failed=$((unit_failed + integration_failed + ui_failed))
+          if [ $total_failed -eq 0 ]; then
+            echo "✅ すべてのテストが成功しました！" >> test_results.md
+          else
+            echo "❌ $total_failed 件のテストが失敗しました。" >> test_results.md
+          fi
+
+      - name: テスト結果をコメント
+        uses: actions/github-script@v7
+        if: always()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            let testContent = '## テスト結果\n\nテストが実行されませんでした。';
+            
+            if (fs.existsSync('test_results.md')) {
+              testContent = fs.readFileSync('test_results.md', 'utf8');
+            }
+            
+            const body = `## 🧪 テスト実行結果\n\n${testContent}\n\n---\n*この結果は自動生成されました*`;
+            
+            // プルリクエストの番号を取得
+            const prNumber = context.payload.pull_request?.number || context.payload.number || context.issue.number;
+            
+            await github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: クリーンアップ
+        if: always()
+        run: |
+          docker compose down -v
